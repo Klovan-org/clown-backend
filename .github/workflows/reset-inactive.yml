@@ -1,0 +1,28 @@
+name: Reset Inactive Users
+
+on:
+  schedule:
+    # Pokreće se svaki sat (na početku sata)
+    - cron: '0 * * * *'
+  workflow_dispatch: # Omogućava ručno pokretanje iz GitHub UI
+
+jobs:
+  reset-statuses:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Reset inactive user statuses
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          psql "$DATABASE_URL" -c "
+            UPDATE users 
+            SET status_message = NULL,
+                updated_at = NOW()
+            WHERE updated_at < NOW() - INTERVAL '4 hours'
+              AND status_message IS NOT NULL;
+          "
+      
+      - name: Log results
+        run: echo "✅ Inactive statuses reset completed"
+        
