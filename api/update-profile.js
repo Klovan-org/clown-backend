@@ -1,5 +1,7 @@
 import { pool } from "../lib/db.js";
 import { verifyTelegramWebAppData } from "../lib/telegram.js";
+import { sendStatusNotificationById } from "../lib/groupNotify.js"; // putanja po tvojoj strukturi
+
 
 const MAX_TEXT_LENGTH = 200;
 const MAX_LEVEL = 6; // ✅ DODAJ OVO
@@ -109,3 +111,8 @@ export default async function handler(req, res) {
     res.status(500).json({ error: "Internal server error" });
   }
 }
+
+
+// ... posle UPDATE users ...
+await sendStatusNotificationById(telegramId);
+
