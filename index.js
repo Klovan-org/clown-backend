@@ -160,6 +160,7 @@ app.post("/api/update-profile", async (req, res) => {
     }
 
     const { location, status_message, level } = req.body;
+    console.log("Parsed fields - location:", location, "status_message:", status_message, "level:", level, "typeof level:", typeof level);
 
     // Validate lengths
     if (location !== undefined && location !== null && location.length > MAX_TEXT_LENGTH) {
@@ -173,9 +174,13 @@ app.post("/api/update-profile", async (req, res) => {
     let parsedLevel = level;
     if (level !== undefined && level !== null) {
       parsedLevel = typeof level === 'string' ? parseInt(level, 10) : level;
+      console.log("Parsed level:", parsedLevel);
       if (typeof parsedLevel !== 'number' || isNaN(parsedLevel) || parsedLevel < 0 || parsedLevel > 6) {
+        console.log("Level validation failed");
         return res.status(400).json({ error: 'Invalid level (must be 0-6)' });
       }
+    } else {
+      console.log("Level not provided or null");
     }
 
     // Check if user exists
