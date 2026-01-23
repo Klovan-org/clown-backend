@@ -1,10 +1,9 @@
 import { pool } from "../lib/db.js";
 import { verifyTelegramWebAppData } from "../lib/telegram.js";
-import { sendStatusNotificationById } from "../lib/groupNotify.js"; // putanja po tvojoj strukturi
-
+import { sendStatusNotificationById } from "../lib/groupNotify.js";
 
 const MAX_TEXT_LENGTH = 200;
-const MAX_LEVEL = 6; // ✅ DODAJ OVO
+const MAX_LEVEL = 6;
 
 function setCorsHeaders(res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -16,9 +15,11 @@ function setCorsHeaders(res) {
 export default async function handler(req, res) {
   setCorsHeaders(res);
 
+  // Handle preflight
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
@@ -45,10 +46,9 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: err.message, details: "initData verification failed" });
     }
 
-    // ✅ PROMENI OVU LINIJU (dodaj level)
     const { level, location, status_message } = req.body || {};
 
-    // ✅ DODAJ OVAJ BLOK (validacija level-a)
+    // Validate level
     if (level !== undefined && level !== null) {
       const n = Number(level);
       if (!Number.isInteger(n) || n < 0 || n > MAX_LEVEL) {
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // Validate lengths (postojeće)
+    // Validate lengths
     if (location !== undefined && location !== null && location.length > MAX_TEXT_LENGTH) {
       return res.status(400).json({ error: `Location too long (max ${MAX_TEXT_LENGTH} chars)` });
     }
@@ -64,7 +64,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: `Status message too long (max ${MAX_TEXT_LENGTH} chars)` });
     }
 
-    // Check if user exists (postojeće)
+    // Check if user exists
     const exists = await pool.query(
       `SELECT 1 FROM users WHERE telegram_id = $1`,
       [telegramId]
@@ -73,17 +73,15 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Build dynamic update query (postojeće + dodaj level)
+    // Build dynamic update query
     const updates = [];
     const values = [];
     let paramIndex = 1;
 
-    // ✅ DODAJ OVO (update level-a)
     if (level !== undefined) {
       updates.push(`level = $${paramIndex++}`);
       values.push(level);
     }
-
     if (location !== undefined) {
       updates.push(`location = $${paramIndex++}`);
       values.push(location);
@@ -105,14 +103,14 @@ export default async function handler(req, res) {
       values
     );
 
-    res.json({ ok: true });
+    // ✅ NOTIFIKACIJA IDE OVDE (posle UPDATE, pre response)
+    // (bez try/catch -> ako pukne, pukne i save, kako želiš)
+    await sendStatusNotificationById(telegramId);
+
+    return res.json({ ok: true });
   } catch (err) {
     console.error("POST /api/update-profile error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
-
-
-// ... posle UPDATE users ...
-await sendStatusNotificationById(telegramId);
 
