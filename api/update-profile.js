@@ -1,6 +1,6 @@
 import { pool } from "../lib/db.js";
 import { verifyTelegramWebAppData } from "../lib/telegram.js";
-import { sendStatusNotificationById } from "../api/groupNotify.js"; // putanja po tvojoj strukturi
+import { sendStatusNotificationById } from "../lib/groupNotify.js"; // putanja po tvojoj strukturi
 
 
 const MAX_TEXT_LENGTH = 200;
