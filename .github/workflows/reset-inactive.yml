@@ -3,7 +3,7 @@ name: Reset inactive users
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/5 * * * *" # test
+    - cron: "0 * * * *" # test
 
 jobs:
   reset:
@@ -21,5 +21,5 @@ jobs:
               location = NULL,
               status_message = NULL,
               updated_at = NOW()
-            WHERE updated_at < NOW() - INTERVAL '5 minutes';
+            WHERE updated_at < NOW() - INTERVAL '2 hours';
           "
