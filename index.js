@@ -169,9 +169,11 @@ app.post("/api/update-profile", async (req, res) => {
       return res.status(400).json({ error: `Status message too long (max ${MAX_TEXT_LENGTH} chars)` });
     }
 
-    // Validate level
+    // Validate and parse level
+    let parsedLevel = level;
     if (level !== undefined && level !== null) {
-      if (typeof level !== 'number' || level < 0 || level > 6) {
+      parsedLevel = typeof level === 'string' ? parseInt(level, 10) : level;
+      if (typeof parsedLevel !== 'number' || isNaN(parsedLevel) || parsedLevel < 0 || parsedLevel > 6) {
         return res.status(400).json({ error: 'Invalid level (must be 0-6)' });
       }
     }
@@ -201,9 +203,9 @@ app.post("/api/update-profile", async (req, res) => {
       values.push(status_message);
     }
 
-    if (level !== undefined && level !== null) {
+    if (parsedLevel !== undefined && parsedLevel !== null) {
       updates.push(`level = $${paramIndex++}`);
-      values.push(level);
+      values.push(parsedLevel);
     }
 
     if (updates.length === 0) {
@@ -213,13 +215,16 @@ app.post("/api/update-profile", async (req, res) => {
     updates.push("updated_at = NOW()");
     values.push(telegramId);
 
-    await pool.query(
-      `UPDATE users SET ${updates.join(", ")} WHERE telegram_id = $${paramIndex}`,
-      values
-    );
+    const query = `UPDATE users SET ${updates.join(", ")} WHERE telegram_id = $${paramIndex}`;
+    console.log("Update query:", query);
+    console.log("Values:", values);
+
+    await pool.query(query, values);
 
     // Pošalji notifikaciju u grupu
+    console.log("Sending notification for telegramId:", telegramId);
     await sendStatusNotification(telegramId);
+    console.log("Notification sent");
 
     res.json({ ok: true });
   } catch (err) {
