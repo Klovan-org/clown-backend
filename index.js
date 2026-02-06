@@ -242,13 +242,6 @@ app.post("/api/update-profile", async (req, res) => {
 /* ======================
    API: KAFANSKI DUELS
    All duel operations via /api/duels?op=...
-====================== */
-
-import duelsHandler from "./api/duels.js";
-app.all("/api/duels", (req, res) => duelsHandler(req, res));
-
-import duelsInitHandler from "./api/duels-init.js";
-app.all("/api/duels-init", (req, res) => duelsInitHandler(req, res));
 
 /* ======================
    START SERVER
