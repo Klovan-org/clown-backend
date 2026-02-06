@@ -4,6 +4,7 @@ import cors from 'cors';
 import { bot, sendStatusNotification } from "./lib/bot.js";
 import { pool } from "./lib/db.js";
 import { verifyTelegramWebAppData } from "./lib/telegram.js";
+import { getInitialStats, applyAction, checkInstantLoss, calculateScore, getAvailableActions, getMaxTurns, ACTIONS } from "./lib/duelGame.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -237,6 +238,17 @@ app.post("/api/update-profile", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+/* ======================
+   API: KAFANSKI DUELS
+   All duel operations via /api/duels?op=...
+====================== */
+
+import duelsHandler from "./api/duels.js";
+app.all("/api/duels", (req, res) => duelsHandler(req, res));
+
+import duelsInitHandler from "./api/duels-init.js";
+app.all("/api/duels-init", (req, res) => duelsInitHandler(req, res));
 
 /* ======================
    START SERVER
