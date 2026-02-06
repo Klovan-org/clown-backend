@@ -40,6 +40,7 @@ export default async function handler(req, res) {
       if (op === "accept") return handleAccept(req, res);
       if (op === "decline") return handleDecline(req, res);
       if (op === "action") return handleAction(req, res);
+      if (op === "surrender") return handleSurrender(req, res);
       return res.status(400).json({ error: "Unknown op" });
     }
 
@@ -235,6 +236,39 @@ async function handleActive(req, res) {
     recent_finished: finished.rows,
     opponents: opponents.rows,
   });
+}
+
+// ===================== SURRENDER =====================
+async function handleSurrender(req, res) {
+  const userId = auth(req);
+  const duelId = req.query.id;
+  if (!duelId) return res.status(400).json({ error: "Missing duel id" });
+
+  const duel = await pool.query(
+    "SELECT * FROM kafanski_duels WHERE id = $1 AND status = 'active'",
+    [duelId]
+  );
+  if (duel.rowCount === 0) return res.status(404).json({ error: "Duel nije aktivan" });
+
+  const d = duel.rows[0];
+  if (String(d.player1_id) !== String(userId) && String(d.player2_id) !== String(userId)) {
+    return res.status(403).json({ error: "Nisi ucesnik ovog duela" });
+  }
+
+  const winnerId = String(d.player1_id) === String(userId) ? d.player2_id : d.player1_id;
+
+  await pool.query(
+    "UPDATE kafanski_duels SET status = 'finished', winner_id = $2, finished_at = NOW() WHERE id = $1",
+    [duelId, winnerId]
+  );
+
+  await pool.query(
+    `INSERT INTO duel_actions_log (duel_id, user_id, turn_number, action_type, flavor_text)
+     VALUES ($1, $2, 0, 'surrender', 'Predao se! Bela zastava u kafani...')`,
+    [duelId, userId]
+  );
+
+  res.json({ ok: true, winner_id: winnerId });
 }
 
 // ===================== ACTION =====================
