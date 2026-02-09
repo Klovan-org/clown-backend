@@ -132,7 +132,7 @@ async function handleStart(req, res) {
   }
 
   const playersRes = await pool.query("SELECT user_id FROM autobus_players WHERE game_id = $1 ORDER BY turn_order", [gameId]);
-  if (playersRes.rowCount < 2) return res.status(400).json({ error: "Potrebno je bar 2 igraca" });
+  if (playersRes.rowCount < 1) return res.status(400).json({ error: "Potrebno je bar 1 igrac" });
 
   const playerIds = playersRes.rows.map(r => r.user_id);
   const { hands, pyramidCards, deck } = dealGame(playerIds);
