@@ -35,6 +35,7 @@ export default async function handler(req, res) {
     if (req.method === "GET") {
       if (op === "state") return handleGetState(req, res);
       if (op === "lobby") return handleLobby(req, res);
+      if (op === "init") return handleInit(req, res);
       return res.status(400).json({ error: "Unknown op" });
     }
 
