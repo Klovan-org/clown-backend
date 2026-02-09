@@ -344,7 +344,7 @@ async function handleMatch(req, res) {
 
   const { card, target_user_id } = req.body || {};
   if (!card || !target_user_id) return res.status(400).json({ error: "Missing card or target_user_id" });
-  if (String(target_user_id) === String(userId)) return res.status(400).json({ error: "Ne mozes sebi dati pice" });
+  // Self-drink allowed (solo mode)
 
   const game = await pool.query("SELECT * FROM autobus_games WHERE id = $1 AND status = 'active'", [gameId]);
   if (game.rowCount === 0) return res.status(404).json({ error: "Igra nije aktivna" });
