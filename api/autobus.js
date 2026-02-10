@@ -420,9 +420,9 @@ async function handleMatch(req, res) {
   const nextMatchTurn = g.match_turn_index + 1;
 
   if (nextMatchTurn >= parseInt(totalPlayers.rows[0].count)) {
-    // All players have had their turn - matching done
+    // All players have had their turn - matching done, auto-flip next
     await pool.query("UPDATE autobus_games SET match_turn_index = $1, matching_done = TRUE WHERE id = $2", [nextMatchTurn, gameId]);
-    await maybeTransitionToBus(gameId, g);
+    await autoFlipNextCard(gameId, g);
   } else {
     await pool.query("UPDATE autobus_games SET match_turn_index = $1 WHERE id = $2", [nextMatchTurn, gameId]);
   }
@@ -467,7 +467,7 @@ async function handlePass(req, res) {
 
   if (nextMatchTurn >= parseInt(totalPlayers.rows[0].count)) {
     await pool.query("UPDATE autobus_games SET match_turn_index = $1, matching_done = TRUE WHERE id = $2", [nextMatchTurn, gameId]);
-    await maybeTransitionToBus(gameId, g);
+    await autoFlipNextCard(gameId, g);
   } else {
     await pool.query("UPDATE autobus_games SET match_turn_index = $1 WHERE id = $2", [nextMatchTurn, gameId]);
   }
@@ -665,6 +665,42 @@ async function handleLobby(req, res) {
     open_games: openGames.rows,
     recent_finished: finished.rows,
   });
+}
+
+// ===================== AUTO FLIP =====================
+async function autoFlipNextCard(gameId, game) {
+  // Re-read game state to get latest
+  const gameRes = await pool.query("SELECT * FROM autobus_games WHERE id = $1", [gameId]);
+  const g = gameRes.rows[0];
+
+  const nextIndex = g.current_card_index + 1;
+
+  // If all 15 cards flipped, transition to bus
+  if (nextIndex >= 15) {
+    await maybeTransitionToBus(gameId, g);
+    return;
+  }
+
+  // Flip next card automatically
+  const pyramidCards = g.pyramid_cards || [];
+  pyramidCards[nextIndex].flipped = true;
+
+  // Reset all players' passed_current
+  await pool.query("UPDATE autobus_players SET passed_current = FALSE WHERE game_id = $1", [gameId]);
+
+  await pool.query(
+    `UPDATE autobus_games
+     SET current_card_index = $1, pyramid_cards = $2, match_turn_index = 0, matching_done = FALSE
+     WHERE id = $3`,
+    [nextIndex, JSON.stringify(pyramidCards), gameId]
+  );
+
+  const flippedCard = pyramidCards[nextIndex];
+  await pool.query(
+    `INSERT INTO autobus_actions_log (game_id, action_type, card_data, flavor_text)
+     VALUES ($1, 'flip_card', $2, $3)`,
+    [gameId, JSON.stringify(flippedCard), `Okrenuta karta: ${formatCard(flippedCard)} (${getDrinkValueForIndex(nextIndex)} cugova)`]
+  );
 }
 
 // ===================== HELPERS =====================
