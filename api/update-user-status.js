@@ -116,7 +116,7 @@ export default async function handler(req, res) {
 
     // Pošalji notifikaciju u grupu za target usera
     console.log("Sending notification for target telegramId:", target_telegram_id);
-    await sendStatusNotification(target_telegram_id);
+    await sendStatusNotification(target_telegram_id, requestingUserId);
     console.log("Notification sent");
 
     res.json({ ok: true, updated_user: target_telegram_id });
