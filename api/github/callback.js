@@ -94,107 +94,139 @@ export default async function handler(req, res) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Invite Sent - Clown Project</title>
+  <title>Klovan Ekipa</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap');
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 20px;
+      overflow: hidden;
     }
     .container {
-      background: white;
-      border-radius: 20px;
-      padding: 40px;
-      max-width: 500px;
+      background: linear-gradient(145deg, #2a2a4a, #1e1e3a);
+      border: 2px solid #e94560;
+      border-radius: 24px;
+      padding: 40px 32px;
+      max-width: 480px;
       text-align: center;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      box-shadow: 0 0 40px rgba(233, 69, 96, 0.3), 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
     }
-    .icon { font-size: 80px; margin-bottom: 20px; }
-    h1 { color: #333; margin-bottom: 10px; font-size: 28px; }
-    .username { color: #667eea; font-weight: bold; }
-    p { color: #666; line-height: 1.6; margin-bottom: 20px; }
+    .container::before {
+      content: '';
+      position: absolute;
+      top: -2px; left: -2px; right: -2px; bottom: -2px;
+      background: linear-gradient(45deg, #e94560, #f5a623, #e94560, #f5a623);
+      border-radius: 26px;
+      z-index: -1;
+      background-size: 300% 300%;
+      animation: border-glow 3s ease infinite;
+    }
+    @keyframes border-glow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .icon { font-size: 72px; margin-bottom: 16px; }
+    h1 {
+      font-family: 'Fredoka One', cursive;
+      color: #f5a623;
+      margin-bottom: 8px;
+      font-size: 26px;
+      text-shadow: 0 0 20px rgba(245, 166, 35, 0.4);
+    }
+    .username {
+      color: #e94560;
+      font-weight: 700;
+      font-size: 18px;
+    }
+    p { color: #ccc; line-height: 1.7; margin-bottom: 18px; font-size: 15px; }
     .steps {
-      background: #f7f7f7;
-      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(233, 69, 96, 0.2);
+      border-radius: 14px;
       padding: 20px;
       margin: 20px 0;
       text-align: left;
     }
     .step {
       display: flex;
-      align-items: start;
-      margin-bottom: 15px;
+      align-items: center;
+      margin-bottom: 14px;
+      color: #ddd;
+      font-size: 14px;
     }
     .step:last-child { margin-bottom: 0; }
-    .step-number {
-      background: #667eea;
-      color: white;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: bold;
+    .step-icon {
+      font-size: 22px;
       margin-right: 12px;
       flex-shrink: 0;
     }
     .btn {
       display: inline-block;
-      background: #667eea;
+      background: linear-gradient(135deg, #e94560, #c0392b);
       color: white;
-      padding: 12px 30px;
-      border-radius: 8px;
+      padding: 14px 32px;
+      border-radius: 12px;
       text-decoration: none;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 16px;
       margin-top: 10px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(233, 69, 96, 0.4);
     }
-    .btn:hover { background: #5568d3; }
-    .footer { margin-top: 30px; color: #999; font-size: 14px; }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 30px rgba(233, 69, 96, 0.6);
+    }
+    .footer { margin-top: 28px; color: #666; font-size: 13px; }
+    .neon-text {
+      color: #e94560;
+      text-shadow: 0 0 10px rgba(233, 69, 96, 0.6);
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="icon">${alreadyMember ? '🎉' : '✅'}</div>
-    <h1>${alreadyMember ? 'Already a Member!' : 'Invite Sent!'}</h1>
+    <div class="icon">${alreadyMember ? '🎪' : '🤡'}</div>
+    <h1>${alreadyMember ? 'Vec si u ekipi, brate!' : 'Pozivnica poslata!'}</h1>
     <p>
-      Hey <span class="username">@${user.login}</span>! 👋<br>
+      E <span class="username">@${user.login}</span>!<br>
       ${alreadyMember
-        ? 'You are already a member of the <strong>Clown Project</strong> organization!'
-        : 'We\'ve sent you an invitation to join the <strong>Clown Project</strong> organization on GitHub.'}
+        ? 'Ti si vec clan <span class="neon-text">Klovan</span> ekipe, legendo! Nema potrebe za invite.'
+        : 'Poslali smo ti pozivnicu za <span class="neon-text">Klovan</span> organizaciju na GitHub-u. Samo prihvati i postajes deo ekipe!'}
     </p>
 
     ${alreadyMember ? '' : `<div class="steps">
       <div class="step">
-        <div class="step-number">1</div>
-        <div>Check your <strong>GitHub notifications</strong> (bell icon on GitHub)</div>
+        <div class="step-icon">🔔</div>
+        <div>Proveri <strong>GitHub notifikacije</strong> (zvonce gore desno)</div>
       </div>
       <div class="step">
-        <div class="step-number">2</div>
-        <div>Or check your <strong>email</strong> from GitHub</div>
+        <div class="step-icon">📧</div>
+        <div>Ili pogledaj <strong>email</strong> od GitHub-a</div>
       </div>
       <div class="step">
-        <div class="step-number">3</div>
-        <div>Click <strong>"Accept invitation"</strong></div>
+        <div class="step-icon">✅</div>
+        <div>Klikni <strong>"Accept invitation"</strong></div>
       </div>
       <div class="step">
-        <div class="step-number">4</div>
-        <div>Start contributing! 🚀</div>
+        <div class="step-icon">🍺</div>
+        <div>Cestitamo, sad si deo kafanske ekipe!</div>
       </div>
     </div>`}
 
     <a href="https://github.com/orgs/${orgName}/invitation" class="btn">
-      ${alreadyMember ? 'Go to Organization' : 'Open GitHub Notifications'}
+      ${alreadyMember ? 'Idi na organizaciju' : 'Otvori GitHub pozivnicu'}
     </a>
 
     <div class="footer">
-      You can close this page now.
+      Mozes zatvoriti ovu stranicu. Vidimo se u kodu! 🍻
     </div>
   </div>
 </body>
@@ -209,32 +241,35 @@ export default async function handler(req, res) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Error - Clown Project</title>
+  <title>Greska - Klovan</title>
   <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      background: #f5f5f5;
+      background: #1a1a2e;
       padding: 20px;
     }
     .error {
-      background: white;
+      background: #2a2a4a;
+      border: 2px solid #e94560;
       padding: 40px;
-      border-radius: 10px;
+      border-radius: 16px;
       text-align: center;
       max-width: 400px;
     }
-    h1 { color: #e53e3e; margin-bottom: 10px; }
-    p { color: #666; }
+    .icon { font-size: 60px; margin-bottom: 16px; }
+    h1 { color: #e94560; margin-bottom: 10px; }
+    p { color: #999; }
     .btn {
       display: inline-block;
-      background: #667eea;
+      background: #e94560;
       color: white;
-      padding: 10px 24px;
-      border-radius: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
       text-decoration: none;
       font-weight: 600;
       margin-top: 20px;
@@ -243,9 +278,10 @@ export default async function handler(req, res) {
 </head>
 <body>
   <div class="error">
-    <h1>Something went wrong</h1>
-    <p>Please try again or contact support.</p>
-    <a href="${process.env.API_BASE}/api/github/join" class="btn">Try Again</a>
+    <div class="icon">💀</div>
+    <h1>Nesto je krenulo naopako</h1>
+    <p>Probaj ponovo ili javi adminu.</p>
+    <a href="${process.env.API_BASE}/api/github/join" class="btn">Probaj ponovo</a>
   </div>
 </body>
 </html>`);
