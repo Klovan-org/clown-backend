@@ -2,6 +2,7 @@ import { pool } from "../lib/db.js";
 import { verifyTelegramWebAppData } from "../lib/telegram.js";
 import {
   dealGame,
+  createDeck,
   canMatch,
   getDrinkValueForIndex,
   getRowForIndex,
@@ -494,10 +495,15 @@ async function handleBusGuess(req, res) {
   if (String(g.bus_player_id) !== String(userId)) return res.status(400).json({ error: "Nisi u autobusu" });
   if (!g.bus_current_card) return res.status(400).json({ error: "Nema trenutne karte" });
 
-  const deck = g.deck || [];
+  let deck = g.deck || [];
   if (deck.length === 0) {
-    // Reshuffle - shouldn't normally happen with 52 cards but safety
-    return res.status(400).json({ error: "Nema vise karata u spilu" });
+    // Spil je prazan - kreiraj novi spil
+    deck = createDeck();
+    await pool.query(
+      `INSERT INTO autobus_actions_log (game_id, user_id, action_type, flavor_text)
+       VALUES ($1, $2, 'new_deck', $3)`,
+      [gameId, userId, `Spil je prazan! Novi spil je umesan! 🃏`]
+    );
   }
 
   const newCard = deck.shift();
@@ -544,6 +550,14 @@ async function handleBusGuess(req, res) {
     if (nextQueueIndex < busQueue.length) {
       // Next bus player
       const nextBusPlayerId = busQueue[nextQueueIndex];
+      if (deck.length === 0) {
+        deck = createDeck();
+        await pool.query(
+          `INSERT INTO autobus_actions_log (game_id, user_id, action_type, flavor_text)
+           VALUES ($1, $2, 'new_deck', $3)`,
+          [gameId, userId, `Spil je prazan! Novi spil je umesan! 🃏`]
+        );
+      }
       const nextCard = deck.shift();
       await pool.query(
         `UPDATE autobus_games
@@ -737,7 +751,10 @@ async function maybeTransitionToBus(gameId, game) {
 
   // Draw first card for bus
   const gameRes = await pool.query("SELECT deck FROM autobus_games WHERE id = $1", [gameId]);
-  const deck = gameRes.rows[0].deck || [];
+  let deck = gameRes.rows[0].deck || [];
+  if (deck.length === 0) {
+    deck = createDeck();
+  }
   const firstCard = deck.shift();
 
   const busPlayerName = busPlayers[0].first_name || busPlayers[0].username || 'Klovn';
